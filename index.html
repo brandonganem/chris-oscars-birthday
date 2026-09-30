@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>The Chris-cademy Awards · Happy Birthday, Chris!</title>
+  <meta name="description" content="An interactive 3D Oscars trivia extravaganza for Chris's birthday. Win statuettes, walk the red carpet, and open the final envelope." />
+  <meta name="theme-color" content="#07050a" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="🏆 The Chris-cademy Awards: Happy Birthday, Chris!" />
+  <meta property="og:description" content="Interactive 3D Oscars trivia. Win statuettes, walk a century of red carpet, and find out who wins Best Birthday in a Leading Role." />
+  <meta property="og:image" content="https://brandonganem.github.io/chris-oscars-birthday/og.png" />
+  <meta property="og:url" content="https://brandonganem.github.io/chris-oscars-birthday/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏆</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Josefin+Sans:wght@400;600;700&family=Limelight&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="3D Oscars stage"></canvas>
+  <div id="vignette"></div>
+
+  <!-- ░░ Curtain intro ░░ -->
+  <div id="curtain">
+    <div class="drape left"></div>
+    <div class="drape right"></div>
+    <div class="valance"></div>
+    <div class="curtain-card">
+      <p class="presents">The Academy of Chris's Friends &amp; Associated Sciences<br />proudly presents</p>
+      <h1 class="deco">The <span>Chris-cademy</span> Awards</h1>
+      <p class="sub">A birthday celebration of cinema's biggest night</p>
+      <button id="enter" class="btn gold big" disabled>Rolling out the red carpet…</button>
+      <p class="tiny">🔊 Sound on for the full experience</p>
+    </div>
+  </div>
+
+  <header id="hud">
+    <button id="home" class="brand" title="Back to the lobby">🏆 <span>Chris-cademy Awards</span></button>
+    <div class="hud-right">
+      <div id="streakPill" class="pill hidden">🔥 <b id="streakVal">0</b></div>
+      <div id="scorePill" class="pill hidden">★ <b id="scoreVal">0</b></div>
+      <button id="mute" class="icon" aria-label="Toggle sound">🔊</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ░░ Lobby ░░ -->
+    <section id="menu" class="screen">
+      <div class="marquee">
+        <div class="bulbs" aria-hidden="true"></div>
+        <p class="kicker">Tonight's honoree</p>
+        <h1 class="title">Happy Birthday, <span class="name">Chris</span></h1>
+        <p class="tag">Nominated for <em>Best Birthday in a Leading Role</em></p>
+      </div>
+      <nav class="menu-grid">
+        <button class="ticket" data-go="trivia"><span class="t-icon">🎬</span><span class="t-title">Play the Trivia</span><span class="t-sub">3 rounds · earn golden statuettes</span></button>
+        <button class="ticket" data-go="walk"><span class="t-icon">🎞️</span><span class="t-title">Walk the Red Carpet</span><span class="t-sub">A century of Oscars, decade by decade</span></button>
+        <button class="ticket" data-go="speech"><span class="t-icon">🎤</span><span class="t-title">Speech Generator</span><span class="t-sub">Beat the orchestra. You have 20 seconds.</span></button>
+        <button class="ticket gold" data-go="finale"><span class="t-icon">✉️</span><span class="t-title">The Final Envelope</span><span class="t-sub">Best Birthday in a Leading Role</span></button>
+      </nav>
+      <p class="hint">Drag to spin the Oscar · tap it for a fun fact</p>
+    </section>
+
+    <!-- ░░ Round intro ░░ -->
+    <section id="round" class="screen">
+      <div class="card round-card">
+        <p class="kicker" id="rnNum">Round 1 of 3</p>
+        <h2 id="rnTitle">Classic Trivia</h2>
+        <p id="rnDesc"></p>
+        <button id="rnGo" class="btn gold big">Action! 🎬</button>
+      </div>
+    </section>
+
+    <!-- ░░ Quiz ░░ -->
+    <section id="quiz" class="screen">
+      <div class="card quiz-card">
+        <div class="quiz-top"><span id="qRound">Round 1 · Classic</span><span id="qCount">1 / 5</span></div>
+        <div class="timer"><div id="timerBar"></div></div>
+        <div id="qEmoji" class="emoji hidden"></div>
+        <h2 id="qText"></h2>
+        <div id="qOptions" class="options"></div>
+        <div id="qYear" class="year hidden">
+          <div id="yearVal" class="year-val">1975</div>
+          <input type="range" id="yearRange" min="1929" max="2026" value="1975" aria-label="Year" />
+          <div class="year-scale"><span>1929</span><span>1975</span><span>2026</span></div>
+          <button id="yearLock" class="btn gold">Lock it in 🔒</button>
+        </div>
+        <div id="qFeedback" class="feedback hidden">
+          <div id="fbTitle"></div>
+          <p id="fbFact"></p>
+          <button id="qNext" class="btn gold">Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ Results ░░ -->
+    <section id="results" class="screen">
+      <div class="card results-card">
+        <p class="kicker">The results are in</p>
+        <div class="oscar-count"><span id="rCount">0</span><small>/ 15 Oscars won</small></div>
+        <h2 id="rTitle"></h2>
+        <p id="rBlurb"></p>
+        <p class="score-line">Final score <b id="rScore">0</b> · Best streak <b id="rStreak">0</b></p>
+        <div class="row">
+          <button id="rShare" class="btn">📋 Brag about it</button>
+          <button id="rAgain" class="btn">↻ Play again</button>
+        </div>
+        <button id="rFinale" class="btn gold big">✉️ Open the Final Envelope</button>
+      </div>
+    </section>
+
+    <!-- ░░ Red carpet walk ░░ -->
+    <section id="walk" class="screen">
+      <div class="walk-top">
+        <p class="kicker">The Red Carpet</p>
+        <p class="walk-sub">A century of Oscars, one decade at a time</p>
+      </div>
+      <div class="walk-bottom">
+        <div class="walk-nav">
+          <button id="wPrev" class="btn round" aria-label="Previous decade">◀</button>
+          <div id="wLabel" class="walk-label">1920s</div>
+          <button id="wNext" class="btn round" aria-label="Next decade">▶</button>
+        </div>
+        <div id="wDots" class="dots"></div>
+      </div>
+    </section>
+
+    <!-- ░░ Speech generator ░░ -->
+    <section id="speech" class="screen">
+      <div class="card speech-card">
+        <p class="kicker">🎤 Acceptance Speech Generator</p>
+        <label class="field">Accepting the award for
+          <select id="spCat"></select>
+        </label>
+        <div class="speech-timer"><div id="spBar"></div><span id="spTime">0:20</span></div>
+        <div id="spText" class="speech-text">Press the button, grab your statuette, and try not to cry. The Chris-cademy gives you 20 seconds. (It's stricter than the real one.)</div>
+        <div id="wrapUp" class="wrapup hidden">🎻 WRAP IT UP! 🎻</div>
+        <div class="row">
+          <button id="spGen" class="btn gold">✨ Write my speech</button>
+          <button id="spRead" class="btn">🔊 Read it aloud</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ Finale ░░ -->
+    <section id="finale" class="screen">
+      <p id="presenter" class="presenter">And the Oscar for <em>Best Birthday in a Leading Role</em> goes to…</p>
+      <div class="envelope-wrap">
+        <div id="envelope" class="envelope">
+          <div class="env-back"></div>
+          <div class="env-card">
+            <small>The winner is</small>
+            <div id="envName">…</div>
+            <span id="envFor"></span>
+          </div>
+          <div class="env-front"></div>
+          <div class="env-flap"></div>
+          <div class="env-seal">★</div>
+        </div>
+      </div>
+      <div id="mistake" class="mistake hidden">⚠️ WAIT, THERE'S BEEN A MISTAKE ⚠️</div>
+      <div id="runner" class="runner" aria-hidden="true">🏃‍♂️✉️</div>
+      <div class="finale-actions">
+        <button id="openEnv" class="btn gold big">Open the envelope</button>
+        <button id="toCake" class="btn gold big hidden">🎂 Bring out the cake</button>
+      </div>
+    </section>
+
+    <!-- ░░ Cake ░░ -->
+    <section id="cake" class="screen">
+      <div class="cake-top">
+        <p class="kicker" id="cakeKicker">Make a wish, Chris</p>
+        <h2 id="cakeTitle">Blow out the candles</h2>
+        <p id="cakeHint">Tap each flame, or blow into your mic.</p>
+      </div>
+      <div class="cake-bottom">
+        <button id="micBtn" class="btn">🎤 Blow into your mic</button>
+        <button id="blowAll" class="btn">💨 Big breath (blow them all)</button>
+        <button id="toCredits" class="btn gold big hidden">🎞️ Roll the credits</button>
+      </div>
+    </section>
+
+    <!-- ░░ Credits ░░ -->
+    <section id="credits" class="screen">
+      <div class="credits-viewport">
+        <div id="creditsRoll" class="credits-roll"></div>
+      </div>
+      <button id="skipCredits" class="btn small skip">Skip ⏭</button>
+      <div id="endCard" class="card end-card hidden">
+        <div class="fyc">
+          <p class="fyc-top">For Your Consideration</p>
+          <h2>Most Creative A.I. Birthday Post</h2>
+          <p class="fyc-prize">Prize: <b>$1.41</b></p>
+          <p class="fyc-note">A legally resold Oscar is worth $1. This prize is worth 41% more.</p>
+        </div>
+        <h3>Happy Birthday, Chris! 🎂</h3>
+        <p>See you at the Oscar party.</p>
+        <div class="row">
+          <button id="replay" class="btn gold">↻ Replay the finale</button>
+          <button id="toLobby" class="btn">🏠 Back to the lobby</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="flash"></div>
+  <noscript><p class="noscript">This birthday card needs JavaScript. Happy birthday anyway, Chris! 🎂</p></noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
